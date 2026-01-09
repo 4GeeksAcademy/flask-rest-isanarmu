@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import String, Boolean
+from sqlalchemy import String, Boolean, ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column
+
 
 db = SQLAlchemy()
 
@@ -8,12 +9,38 @@ class User(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(nullable=False)
+    username: Mapped[str] = mapped_column(String(13), unique=True, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean(), nullable=False)
+
+class Post(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    text: Mapped[str] = mapped_column(String(200), nullable=False)
+    link: Mapped[str] = mapped_column(unique=True, nullable=False)
+    userid: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
+
+class Followers(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    followerid: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
+    followedid: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
+
+class Actions(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    like: Mapped[bool] = mapped_column(Boolean(), nullable=False)
+    postid: Mapped[int] = mapped_column(ForeignKey('post.id'), nullable=False)
+    userid: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
+
+class Comment_section(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    comment: Mapped[str] = mapped_column(String(200), nullable=False)
+    postid: Mapped[int] = mapped_column(ForeignKey('post.id'), nullable=False)
+    userid: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
+
 
 
     def serialize(self):
         return {
             "id": self.id,
-            "email": self.email,
-            # do not serialize the password, its a security breach
+            "comment": self.comment,
+            "postid":self.postid,
+            "userid":self.userid,
         }
