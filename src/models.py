@@ -10,7 +10,7 @@ class User(db.Model):
 
     __tablename__ = "user"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
     email: Mapped[str] = mapped_column(
         String(120), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(nullable=False)
@@ -19,45 +19,55 @@ class User(db.Model):
     is_active: Mapped[bool] = mapped_column(Boolean(), nullable=False)
 
     posts: Mapped[list["Post"]] = relationship(back_populates="author")
-    followers: Mapped[list["User"]] = relationship(back_populates="following")
-
+    followers: Mapped[list["Followers"]] = relationship(foreign_keys="Followers.followedid" ,back_populates="followed_user")
+    following: Mapped[list["Followers"]] = relationship(foreign_keys="Followers.followerid" ,back_populates="follower_user")
 
 class Post(db.Model):
-    id: Mapped[int] = mapped_column(primary_key=True)
+    __tablename__= "post"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
     text: Mapped[str] = mapped_column(String(200), nullable=False)
     link: Mapped[str] = mapped_column(unique=True, nullable=False)
     userid: Mapped[int] = mapped_column(
         ForeignKey('user.id'), nullable=False)
+    
     author: Mapped["User"] = relationship(back_populates="posts")
-
+    comments: Mapped[list["Comment_section"]] = relationship(back_populates="post")
 
 class Followers(db.Model):
     __tablename__ = "followers"
 
-    id: Mapped[int] = mapped_column(
+    id: Mapped[int] = mapped_column(Integer, 
         primary_key=True)
     followerid: Mapped[int] = mapped_column(
         ForeignKey('user.id'), nullable=False)
     followedid: Mapped[int] = mapped_column(
         ForeignKey('user.id'), nullable=False)
-
+    
+ 
+    followed_user: Mapped["User"] = relationship("User", foreign_keys=[followedid], back_populates="followers")
+    follower_user: Mapped["User"] = relationship("User", foreign_keys=[followerid], back_populates="following")
+    
 
 class Actions(db.Model):
     __tablename__ = "actions"
 
-    id: Mapped[int] = mapped_column(
+    id: Mapped[int] = mapped_column(Integer, 
         primary_key=True)
     like: Mapped[bool] = mapped_column(Boolean(), nullable=False)
     postid: Mapped[int] = mapped_column(
         ForeignKey('post.id'), nullable=False)
     userid: Mapped[int] = mapped_column(
         ForeignKey('user.id'), nullable=False)
+    
+    post: Mapped["Post"] = relationship()
+    user: Mapped["User"] = relationship()
 
 
 class Comment_section(db.Model):
     __tablename__ = "comment"
 
-    id: Mapped[int] = mapped_column(
+    id: Mapped[int] = mapped_column(Integer, 
         primary_key=True)
     comment: Mapped[str] = mapped_column(
         String(200), nullable=False)
@@ -66,13 +76,6 @@ class Comment_section(db.Model):
     userid: Mapped[int] = mapped_column(
         ForeignKey('user.id'), nullable=False)
 
-    post: Mapped["Post"] = relationship(back_populates="comment")
+    post: Mapped["Post"] = relationship(back_populates="comments")
 
-
-def serialize(self):
-    return {
-        "id": self.id,
-        "comment": self.comment,
-        "postid": self.postid,
-        "userid": self.userid,
-    }
+    
