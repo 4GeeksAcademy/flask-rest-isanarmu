@@ -26,13 +26,13 @@ class Post(db.Model):
     __tablename__= "post"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    text: Mapped[str] = mapped_column(String(200), nullable=False)
+    description: Mapped[str] = mapped_column(String(200), nullable=False)
     link: Mapped[str] = mapped_column(unique=True, nullable=False)
     userid: Mapped[int] = mapped_column(
         ForeignKey('user.id'), nullable=False)
     
     author: Mapped["User"] = relationship(back_populates="posts")
-    comments: Mapped[list["Comment_section"]] = relationship(back_populates="post")
+    comments: Mapped[list["CommentSection"]] = relationship(back_populates="post")
 
 class Followers(db.Model):
     __tablename__ = "followers"
@@ -64,8 +64,8 @@ class Actions(db.Model):
     user: Mapped["User"] = relationship()
 
 
-class Comment_section(db.Model):
-    __tablename__ = "comment"
+class CommentSection(db.Model):
+    __tablename__ = "comment_section"
 
     id: Mapped[int] = mapped_column(Integer, 
         primary_key=True)
